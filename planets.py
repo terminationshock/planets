@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+# This file is part of Planets.
+#
+# Planets is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Planets is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Planets.  If not, see <http://www.gnu.org/licenses/>.
+
 import pygame
 import sys
 from pygame.locals import *
@@ -130,7 +145,7 @@ class Universe:
 
         self.dt = None
         self.planets = Planets()
-        self.solar_system(with_comets=False)
+        self.solar_system()
         #self.neutron_star()
 
         self.zoom = min(100., 0.5*monitor_height / max(1.e-33, np.max(np.sum(self.planets.x**2, axis=1)**0.5)))
@@ -139,30 +154,21 @@ class Universe:
         self.timestep0 = self.timestep
         self.show_orbits = True
 
-    def solar_system(self, with_comets=True):
+    def solar_system(self):
         self.planets.add_planet(x=[0.,0.], v=[0.,0.], m=Planets.solarmass, r=0.5*4.e4*Planets.km, color=(249,246,91), name='Sun')
 
         imgsurf = pygame.image.load('solar_system.png')
 
         planets = []
         # Semi-major axis [AU], eccentricity, mass [Earth masses], diameter [km]
-        planets.append(( 0.387099, 0.205630,   0.055256,   4879., ( 13, 12, 0, 0), 'Mercury'))
-        planets.append(( 0.723332, 0.006772,   0.815030,  12104., ( 31, 31,0,14), 'Venus'))
-        planets.append(( 1.000002, 0.016709,   1.000000,  12756., ( 31, 31, 0,47), 'Earth'))
-        planets.append(( 1.523679, 0.093390,   0.107450,   6792., ( 16, 16,0,80), 'Mars'))
-        planets.append(( 5.202600, 0.048500, 317.877470, 142984., (324,302,0, 105), 'Jupiter'))
-        planets.append(( 9.554909, 0.055550,  95.162370, 120536., (415,454,344,0), 'Saturn'))
-        planets.append((19.218400, 0.046380,  14.534650,  51118., (117,118,767,0), 'Uranus'))
-        planets.append((30.110387, 0.009460,  17.145970,  49528., (113,113, 771,124), 'Neptune'))
-        #planets.append((39.482000, 0.248800,   0.002181,   2374., (208,168,138), 'Pluto'))
-
-        if with_comets:
-            planets.append((17.834, 0.967, 1.e-10, 10., (100,100,100), 'Halley'))
-            planets.append(( 2.218, 0.847, 1.e-10, 10., (100,100,100), 'Encke'))
-            planets.append(( 3.836, 0.569, 1.e-10, 10., (100,100,100), 'Faye'))
-            planets.append(( 3.495, 0.613, 1.e-10, 10., (100,100,100), 'd\'Arrest'))
-            planets.append(( 3.432, 0.635, 1.e-10, 10., (100,100,100), 'Pons-Winnecke'))
-            planets.append(( 5.699, 0.819, 1.e-10, 10., (100,100,100), 'Tuttle'))
+        planets.append(( 0.387099, 0.205630,   0.055256,   4879., ( 13, 12,  0,  0), 'Mercury'))
+        planets.append(( 0.723332, 0.006772,   0.815030,  12104., ( 31, 31,  0, 14), 'Venus'))
+        planets.append(( 1.000002, 0.016709,   1.000000,  12756., ( 31, 31,  0, 47), 'Earth'))
+        planets.append(( 1.523679, 0.093390,   0.107450,   6792., ( 16, 16,  0, 80), 'Mars'))
+        planets.append(( 5.202600, 0.048500, 317.877470, 142984., (324,302,  0,105), 'Jupiter'))
+        planets.append(( 9.554909, 0.055550,  95.162370, 120536., (415,454,344,  0), 'Saturn'))
+        planets.append((19.218400, 0.046380,  14.534650,  51118., (117,118,767,  0), 'Uranus'))
+        planets.append((30.110387, 0.009460,  17.145970,  49528., (113,113,771,124), 'Neptune'))
 
         for a,e,m,r,k,name in planets:
             x = a * (1. + e)
@@ -179,7 +185,7 @@ class Universe:
                                        self.planets.x[0,1] + x*np.sin(alpha)], m=m, e=e, r=0.5*r*Planets.km, color=c, image=img, name=name)
 
     def neutron_star(self):
-        self.planets.add_planet(x=[-40.,2.], v=[300.*Planets.km/Planets.s, 0.], m=1.4*Planets.solarmass, r=12.*Planets.km, name='Neutron Star')
+        self.planets.add_planet(x=[-50.,2.], v=[300.*Planets.km/Planets.s, 0.], m=1.4*Planets.solarmass, r=12.*Planets.km, name='Neutron Star')
 
     def step(self):
         if self.dt is not None:
@@ -206,10 +212,7 @@ class Universe:
             self.clock.tick(20)
 
             for event in pygame.event.get():
-                if event.type == MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        self.planets.add_planet(x=(event.pos-self.monitor_center)/self.zoom + self.center)
-                elif event.type == KEYDOWN:
+                if event.type == KEYDOWN:
                     if event.key == K_ESCAPE:
                         sys.exit(0)
                     elif event.key == K_PLUS:
