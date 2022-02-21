@@ -1,6 +1,6 @@
 module gravity
     implicit none
-    real(kind=8), parameter :: pi = 3.141592653589793
+    real(kind=8), parameter :: pi = 3.141592653589793d0
     real(kind=8), parameter :: G = 8.890125158720449d-10
     real(kind=8), parameter :: drmax = 5.d-4
 

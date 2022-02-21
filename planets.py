@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import pygame
 import sys
@@ -50,7 +50,7 @@ class Planets:
         if color is None:
             color = (255,255,255)
             if image is not None:
-                color = image.get_at((image.get_width()/2, image.get_height()/2))
+                color = image.get_at((int(image.get_width()/2), int(image.get_height()/2)))
         self.color.append(color)
         self.name.append(name)
         self.rect.append(None)
@@ -71,7 +71,7 @@ class Planets:
         a, b, e, alpha, perihelion, aphelion, T, isun = gravity.orbit(self.x, self.v, self.m, len(self.m))
         isun -= 1
 
-        for i in xrange(len(self.m)):
+        for i in range(len(self.m)):
             if self.m[i] > 0:
                 if 0 <= e[i] < 1.-1.e-6 and isun[i] >= 0 and (show_orbits or tooltip == i):
                     beta = alpha[i] + np.arctan2(*tuple(self.x[i,::-1] - self.x[isun[i],::-1]))
@@ -82,9 +82,9 @@ class Planets:
                            x * np.sin(beta) + y * np.cos(beta)
                     x, y = (self.x[isun[i],0] + x - center[0]) * scale + monitor_center[0], \
                            (self.x[isun[i],1] + y - center[1]) * scale + monitor_center[1]
-                    pygame.draw.polygon(screen, self.color[i], [(x[j],y[j]) for j in xrange(len(x))],1)
+                    pygame.draw.polygon(screen, self.color[i], [(x[j],y[j]) for j in range(len(x))],1)
 
-        for i in xrange(len(self.m)):
+        for i in range(len(self.m)):
             if self.m[i] > 0:
                 x, y = tuple(np.int32((self.x[i,:]-center)*scale + monitor_center))
                 rscaled = self.r[i] * scale * 1.e3
