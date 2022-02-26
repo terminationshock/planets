@@ -36,7 +36,6 @@ module gravity
         a(:) = 0.d0
         collide_any = .false.
 
-!$OMP PARALLEL DO PRIVATE(i, j, dr)
         do i = 1, nplanets
             acc(i,:) = 0.d0
             if (i .ne. iplanet .and. m(i) .gt. 0.d0) then
@@ -50,7 +49,6 @@ module gravity
                 endif
             endif
         enddo
-!$OMP END PARALLEL DO
 
         a = sum(acc, 1)
     end subroutine acceleration
@@ -180,7 +178,7 @@ module gravity
         real(kind=8),    dimension(nplanets),   intent(in)  :: m
         real(kind=8),    dimension(nplanets),   intent(out) :: a, b, e, alpha, perihelion, aphelion, T
         integer(kind=4), dimension(nplanets),   intent(out) :: isun
-        real(kind=8)                                        :: r, vv, h, p, mu, cosalpha, energy, energy_min
+        real(kind=8)                                        :: r, vv2, h, p, mu, cosalpha, energy, energy_min
         integer(kind=4)                                     :: i, j
 
         a(:) = 0.d0
@@ -192,16 +190,15 @@ module gravity
         T(:) = 0.d0
         isun(:) = 0
 
-!$OMP PARALLEL DO PRIVATE(i, j, vv, mu, r, energy, energy_min)
         do i = 1, nplanets
             if (m(i) .gt. 0.d0) then
-                vv = sqrt(v(i,1)**2 + v(i,2)**2)
+                vv2 = v(i,1)**2 + v(i,2)**2
                 energy_min = 0.d0
                 do j = 1, nplanets
                     if (m(i) .lt. m(j)) then
                         mu = G * (m(i) + m(j))
                         r = sqrt((x(i,1)-x(j,1))**2 + (x(i,2)-x(j,2))**2)
-                        energy = 0.5d0 * vv**2 - mu / r
+                        energy = 0.5d0 * vv2 - mu / r
                         if (energy .lt. energy_min) then
                             isun(i) = j
                             energy_min = energy
@@ -210,19 +207,17 @@ module gravity
                 enddo
             endif
         enddo
-!$OMP END PARALLEL DO
 
-!$OMP PARALLEL DO PRIVATE(i, r, vv, mu, h, p, cosalpha)
         do i = 1, nplanets
             if (isun(i) .gt. 0) then
                 r = sqrt((x(i,1)-x(isun(i),1))**2 + (x(i,2)-x(isun(i),2))**2)
-                vv = sqrt(v(i,1)**2 + v(i,2)**2)
+                vv2 = v(i,1)**2 + v(i,2)**2
                 mu = G * (m(i) + m(isun(i)))
                 h = (x(i,1)-x(isun(i),1)) * v(i,2) - (x(i,2)-x(isun(i),2)) * v(i,1)
                 p = h**2 / mu
 
-                if (mu .eq. 0.5d0 * r * vv**2) cycle
-                a(i) = 1.d0 / (2.d0 / r - vv**2 / mu)
+                if (mu .eq. 0.5d0 * r * vv2) cycle
+                a(i) = 1.d0 / (2.d0 / r - vv2 / mu)
 
                 if (p .gt. a(i)) cycle
                 e(i) = sqrt(1.d0 - p / a(i))
@@ -236,7 +231,6 @@ module gravity
                 alpha(i) = sign(acos(cosalpha), (x(i,1)-x(isun(i),1))*v(i,1) + (x(i,2)-x(isun(i),2))*v(i,2))
             endif
         enddo
-!$OMP END PARALLEL DO
     end subroutine orbit
 
 end module gravity

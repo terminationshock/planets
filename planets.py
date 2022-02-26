@@ -37,6 +37,7 @@ class Planets:
         self.image = []
         self.name = []
         self.rect = []
+        self.circle = np.linspace(0., 2.*np.pi, 64)
 
     def add_planet(self, x=[0.,0.], v=None, m=1., r=4.e-5, e=0., color=None, image=None, name='', isun=0):
         '''
@@ -90,14 +91,13 @@ class Planets:
             if self.m[i] > 0:
                 if 0 <= e[i] < 1.-1.e-6 and isun[i] >= 0 and (show_orbits or tooltip == i):
                     beta = alpha[i] + np.arctan2(*tuple(self.x[i,::-1] - self.x[isun[i],::-1]))
-                    t = np.linspace(0., 2.*np.pi, 64)
-                    x, y = a[i] * np.cos(t) + a[i] * e[i], \
-                           b[i] * np.sin(t)
+                    x, y = a[i] * np.cos(self.circle) + a[i] * e[i], \
+                           b[i] * np.sin(self.circle)
                     x, y = x * np.cos(beta) - y * np.sin(beta), \
                            x * np.sin(beta) + y * np.cos(beta)
                     x, y = (self.x[isun[i],0] + x - center[0]) * scale + monitor_center[0], \
                            (self.x[isun[i],1] + y - center[1]) * scale + monitor_center[1]
-                    pygame.draw.polygon(screen, self.color[i], [(x[j],y[j]) for j in range(len(x))],1)
+                    pygame.draw.polygon(screen, self.color[i], list(zip(x,y)), 1)
 
         for i in range(len(self.m)):
             if self.m[i] > 0:
@@ -110,7 +110,7 @@ class Planets:
                     dx, dy = self.image[i].get_width(), self.image[i].get_height()
                     r = 0.5 * max(dx, dy)
                     dx, dy = max(rmin*2, int(dx * rscaled/r)), max(rmin*2, int(dy * rscaled/r))
-                    x, y = x - dx/2, y - dy/2
+                    x, y = x - 0.5 * dx, y - 0.5 * dy
                     self.rect[i] = screen.blit(pygame.transform.scale(self.image[i], (dx,dy)), (x, y))
 
         if tooltip is not None:
@@ -136,6 +136,7 @@ class Universe:
         self.surf.fill((0,0,0))
         self.monitor_center = 0.5 * np.array([monitor_width, monitor_height])
         self.center = np.zeros(2)
+        self.font = pygame.font.SysFont('Arial', 16, bold=False)
 
         pygame.display.set_caption('Planets')
         pygame.mouse.set_visible(True)
@@ -200,8 +201,7 @@ class Universe:
     def draw(self, t, tooltip):
         self.planets.draw(self.screen, self.monitor_center, self.center, self.zoom, self.show_orbits, tooltip)
         x0, y0 = 20, 20
-        font = pygame.font.SysFont('Arial', 16, bold=False)
-        text = font.render('%i days' % t, True, (255,255,255))
+        text = self.font.render('%i days' % t, True, (255,255,255))
         self.screen.blit(text, (x0, y0))
         y0 += 30
         pygame.draw.line(self.screen, (255,255,255), (x0, y0), (x0+self.zoom, y0))
