@@ -11,6 +11,7 @@ This program
 - uses accurate physical properties of the planets and their orbits.
 - calculates the Keplerian orbits of all planets using Runge-Kutta 4th order integration.
 - shows orbital parameters as tooltips of the planets.
+- handles collisions between planets.
 
 Note that the planet images are not to scale.
 
