@@ -15,8 +15,13 @@
 
 module gravity
     implicit none
+    ! Length in AU; Time in days; Mass in Earth mass
     real(kind=8), parameter :: pi = 3.141592653589793d0
-    real(kind=8), parameter :: G = 8.887724591822893d-10
+    real(kind=8), parameter :: G = 8.887724591822893d-10 ! AU^3 / (earthmass * day^2)
+    real(kind=8), parameter :: solarmass = 332946.04877d0
+    real(kind=8), parameter :: earthmass = 5.97219d24 ! kg
+    real(kind=8), parameter :: km = 1.d0 / 149597870.700d0 ! AU
+    real(kind=8), parameter :: s = 1.d0 / 86400d0 ! day
     real(kind=8), parameter :: drmax = 5.d-4
 
     contains

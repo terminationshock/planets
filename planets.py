@@ -23,12 +23,6 @@ from random import random
 from gravity import gravity
 
 class Planets:
-    # Length in AU; Time in days; Mass in Earth mass
-    solarmass = 332946.04877
-    earthmass = 5.97219e24 # kg
-    km = 1. / 149597870.700
-    s = 1. / 86400.
-
     def __init__(self):
         self.x = []
         self.v = []
@@ -157,7 +151,7 @@ class Universe:
         self.show_orbits = True
 
     def solar_system(self):
-        self.planets.add_planet(x=[0.,0.], v=[0.,0.], m=Planets.solarmass, r=0.5*4.e4*Planets.km, color=(249,246,91), name='Sun')
+        self.planets.add_planet(x=[0.,0.], v=[0.,0.], m=gravity.solarmass, r=0.5*4.e4*gravity.km, color=(249,246,91), name='Sun')
 
         imgsurf = pygame.image.load('solar_system.png')
 
@@ -184,10 +178,10 @@ class Universe:
                 img.fill((255,255,255,0))
                 img.blit(imgsurf, tuple(-np.array(k[2:])))
             self.planets.add_planet(x=[self.planets.x[0,0] + x*np.cos(alpha), \
-                                       self.planets.x[0,1] + x*np.sin(alpha)], m=m, e=e, r=0.5*r*Planets.km, color=c, image=img, name=name)
+                                       self.planets.x[0,1] + x*np.sin(alpha)], m=m, e=e, r=0.5*r*gravity.km, color=c, image=img, name=name)
 
     def neutron_star(self):
-        self.planets.add_planet(x=[-50.,2.], v=[300.*Planets.km/Planets.s, 0.], m=1.4*Planets.solarmass, r=12.*Planets.km, name='Neutron Star')
+        self.planets.add_planet(x=[-50.,2.], v=[300.*gravity.km/gravity.s, 0.], m=1.4*gravity.solarmass, r=12.*gravity.km, name='Neutron Star')
 
     def step(self):
         if self.dt is not None:
