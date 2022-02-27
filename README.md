@@ -10,6 +10,7 @@ This program
 - renders the ecliptic, so that the solar system is seen from above.
 - uses accurate physical properties of the planets and their orbits.
 - calculates the Keplerian orbits of all planets using Runge-Kutta 4th order integration.
+- conserves energy and angular momentum sufficiently well.
 - shows orbital parameters as tooltips of the planets.
 - handles collisions between planets.
 
