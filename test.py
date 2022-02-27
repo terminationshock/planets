@@ -19,6 +19,8 @@ import numpy as np
 from gravity import gravity
 
 def test_preserve_direction():
+    # Movement only along x or y axes
+
     m = np.array([1., 2.]) # M_Earth
     r = np.array([0.001, 0.001]) # AU
 
@@ -41,6 +43,8 @@ def test_preserve_direction():
             assert(all(x[:,0] == 0))
 
 def test_preserve_symmetry():
+    # Movement of two equal objects
+
     m = np.array([1., 1.]) # M_Earth
     r = np.array([0.001, 0.001]) # AU
     x = np.asfortranarray([[-1., 1.], [1., -1.]]) # AU
@@ -53,28 +57,51 @@ def test_preserve_symmetry():
     assert(abs(sum(v[:,0]) / v[0,0]) < 1.e-15)
     assert(abs(sum(v[:,1]) / v[0,1]) < 1.e-15)
 
-def test_orbit():
-    m = np.array([332953., 1.]) # Sun and Earth
+def test_planet():
+    # Movement of Earth around Sun
+
+    m = np.array([gravity.solarmass, 1.]) # Sun and Earth
     r = np.array([0.001, 0.001]) # AU
     x = np.asfortranarray([[0., 0.], [1., 0.]]) # AU
-    v = np.asfortranarray([[0., 0.], [0., 0.0172]]) # AU/day
+    v0 = 0.0172 # AU/day
+    v = np.asfortranarray([[0., 0.], [0., v0]]) # AU/day
 
+    # Angular momentum
     L0 = m[1] * v[1,1]
+    # Orbital energy
     E0 = 0.5 * v[1,1]**2 - gravity.g*(m[0]+m[1])/x[1,0]
 
-    gravity.integrate(9129, 1.e-2, x, v, m, r, len(m))
+    # 1/4 of a year
+    gravity.integrate(91314, 1.e-3, x, v, m, r, len(m))
 
+    # Test angular momentum and energy conservation
     L1 = m[1] * (x[1,0]*v[1,1] - x[1,1]*v[1,0]) + m[0] * (x[0,0]*v[0,1] - x[0,1]*v[0,0])
     E1 = 0.5 * (v[1,0]**2 + v[1,1]**2) - gravity.g*(m[0]+m[1])/np.sqrt(x[1,0]**2 + x[1,1]**2)
     assert(abs(L0 - L1) / L0 < 1.e-8)
     assert(abs(E0 - E1) / E0 < 1.e-15)
 
-    assert(abs(x[1,0]) < 1.e-5)
+    assert(abs(x[1,0]) < 1.e-4)
     assert(abs(x[1,1] - 1.) < 1.e-3)
-    assert(abs(v[1,0] + 0.0172) < 1.e-5)
+    assert(abs(v[1,0] + v0) < 1.e-5)
     assert(abs(v[1,1]) < 1.e-5)
 
+    # another 3/4 of a year -> one year
+    gravity.integrate(273942, 1.e-3, x, v, m, r, len(m))
+
+    # Test angular momentum and energy conservation
+    L2 = m[1] * (x[1,0]*v[1,1] - x[1,1]*v[1,0]) + m[0] * (x[0,0]*v[0,1] - x[0,1]*v[0,0])
+    E2 = 0.5 * (v[1,0]**2 + v[1,1]**2) - gravity.g*(m[0]+m[1])/np.sqrt(x[1,0]**2 + x[1,1]**2)
+    assert(abs(L0 - L2) / L0 < 1.e-8)
+    assert(abs(E0 - E2) / E0 < 1.e-15)
+
+    assert(abs(x[1,0] - 1.) < 1.e-5)
+    assert(abs(x[1,1]) < 1.e-2)
+    assert(abs(v[1,0]) < 1.e-4)
+    assert(abs(v[1,1] - v0) < 1.e-7)
+
 def test_collision():
+    # Two colliding bodies should merge into one
+
     m = np.array([1., 1.]) # M_Earth
     r = np.array([1., 1.]) # AU
     x = np.asfortranarray([[-1., 0.], [1., 0.]]) # AU
@@ -88,7 +115,34 @@ def test_collision():
     assert(all(x[0,:] == 0.))
     assert(all(v[0,:] == 0.))
 
+def test_orbit():
+    # Earth's orbital parameters should match approximately
+
+    m = np.array([gravity.solarmass, 1.]) # Sun and Earth
+    r = np.array([0.001, 0.001]) # AU
+    x = np.asfortranarray([[0., 0.], [1., 0.]]) # AU
+    v0 = 0.0172 # AU/day
+    v = np.asfortranarray([[0., 0.], [0., v0]]) # AU/day
+
+    a, b, e, _, perihelion, aphelion, T, isun = gravity.orbit(x, v, m, len(m))
+
+    assert(a[0] == 0.)
+    assert(b[0] == 0.)
+    assert(perihelion[0] == 0.)
+    assert(aphelion[0] == 0.)
+    assert(T[0] == 0.)
+    assert(isun[0] == 0)
+
+    assert(0.999 < a[1] < 1.)
+    assert(0.999 < b[1] < 1.)
+    assert(2.e-4 < e[1] < 3.e-4)
+    assert(0.999 < perihelion[1] < 1.)
+    assert(abs(aphelion[1] - 1.) <= 1.e-12)
+    assert(355. < T[1] < 366.)
+    assert(isun[1] == 1)
+
 test_preserve_direction()
 test_preserve_symmetry()
-test_orbit()
+test_planet()
 test_collision()
+test_orbit()
