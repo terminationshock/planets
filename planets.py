@@ -24,7 +24,8 @@ from gravity import gravity
 
 class Planets:
     # Length in AU; Time in days; Mass in Earth mass
-    solarmass = 332842.3167057
+    solarmass = 332946.04877
+    earthmass = 5.97219e24 # kg
     km = 1. / 149597870.700
     s = 1. / 86400.
 
