@@ -36,7 +36,3 @@ Note that the planet images are not to scale.
 ## Run
 
 Build the Fortran helper library first with `make`. Then start the application with `./planets.py`.
-
-## License
-
-[GPL v3](https://www.gnu.org/licenses/gpl-3.0)
