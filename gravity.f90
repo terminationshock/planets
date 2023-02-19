@@ -44,9 +44,9 @@ module gravity
 
         do i = 1, nplanets
             acc(i,:) = 0.d0
-            if (i .ne. iplanet .and. m(i) .gt. 0.d0) then
+            if (i /= iplanet .and. m(i) > 0.d0) then
                 dr = sqrt((xplanet(1) - x(i,1))**2 + (xplanet(2) - x(i,2))**2)
-                if (dr .gt. r(iplanet) + r(i)) then
+                if (dr > r(iplanet) + r(i)) then
                     do j = 1, 2
                         acc(i,j) = -G * m(i) * (xplanet(j) - x(i,j)) / dr**3
                     enddo
@@ -69,6 +69,7 @@ module gravity
         logical,                         intent(out) :: collide_any
         real(dp), dimension(4,2)                     :: kx, kv
         real(dp), dimension(2)                       :: a, xx, vv
+        real(dp), parameter                          :: sixth = 1.d0 / 6.d0
         integer                                      :: j
         logical                                      :: bump
 
@@ -107,8 +108,8 @@ module gravity
         do j = 1, 2
             kx(4,j) = dt * vv(j)
             kv(4,j) = dt * a(j)
-            xnew(j) = x(iplanet,j) + (kx(1,j) + 2.d0*kx(2,j) + 2.d0*kx(3,j) + kx(4,j)) / 6.d0
-            vnew(j) = v(iplanet,j) + (kv(1,j) + 2.d0*kv(2,j) + 2.d0*kv(3,j) + kv(4,j)) / 6.d0
+            xnew(j) = x(iplanet,j) + (kx(1,j) + 2.d0*kx(2,j) + 2.d0*kx(3,j) + kx(4,j)) * sixth
+            vnew(j) = v(iplanet,j) + (kv(1,j) + 2.d0*kv(2,j) + 2.d0*kv(3,j) + kv(4,j)) * sixth
         enddo
     end subroutine rk4_step
 
@@ -118,18 +119,19 @@ module gravity
         real(dp), dimension(nplanets,2), intent(inout) :: x, v
         real(dp), dimension(nplanets),   intent(inout) :: m, r
         real(dp)                                       :: dr
+        real(dp), parameter                            :: third = 1.d0 / 3.d0
         integer                                        :: i, j
 
         do i = 1, nplanets
-            if (i .ne. iplanet .and. m(iplanet) .gt. 0.d0) then
+            if (i /= iplanet .and. m(iplanet) > 0.d0) then
                 dr = sqrt((x(iplanet,1) - x(i,1))**2 + (x(iplanet,2) - x(i,2))**2)
-                if (dr .le. r(iplanet) + r(i) .and. m(i) .gt. 0.d0 .and. m(iplanet) .ge. m(i)) then
+                if (dr <= r(iplanet) + r(i) .and. m(i) > 0.d0 .and. m(iplanet) >= m(i)) then
                     do j = 1, 2
                         x(iplanet,j) = 0.5d0 * (x(iplanet,j) + x(i,j))
                         v(iplanet,j) = (m(iplanet) * v(iplanet,j) + m(i) * v(i,j)) / (m(iplanet) + m(i))
                     enddo
                     m(iplanet) = m(iplanet) + m(i)
-                    r(iplanet) = (r(iplanet)**3 + r(i)**3)**(1.d0/3.d0)
+                    r(iplanet) = (r(iplanet)**3 + r(i)**3)**third
                     m(i) = 0.d0
                 endif
             endif
@@ -152,7 +154,7 @@ module gravity
         dr = 0.d0
         do n = 1, ndt
             do i = 1, nplanets
-                if (m(i) .gt. 0.d0) then
+                if (m(i) > 0.d0) then
                     call rk4_step(i, nplanets, x, v, m, r, dt, xx, vv, collide_any)
                     ddr = 0.d0
                     do j = 1, 2
@@ -170,7 +172,7 @@ module gravity
                 enddo
             endif
         enddo
-        if (dr .gt. 0.d0) then
+        if (dr > 0.d0) then
             dtnew = drmax / dr * dt
         else
             dtnew = 1.d0
@@ -197,15 +199,15 @@ module gravity
         isun(:) = 0
 
         do i = 1, nplanets
-            if (m(i) .gt. 0.d0) then
+            if (m(i) > 0.d0) then
                 vv2 = v(i,1)**2 + v(i,2)**2
                 energy_min = 0.d0
                 do j = 1, nplanets
-                    if (m(i) .lt. m(j)) then
+                    if (m(i) < m(j)) then
                         mu = G * (m(i) + m(j))
-                        r = sqrt((x(i,1)-x(j,1))**2 + (x(i,2)-x(j,2))**2)
+                        r = sqrt((x(i,1) - x(j,1))**2 + (x(i,2) - x(j,2))**2)
                         energy = 0.5d0 * vv2 - mu / r
-                        if (energy .lt. energy_min) then
+                        if (energy < energy_min) then
                             isun(i) = j
                             energy_min = energy
                         endif
@@ -215,17 +217,17 @@ module gravity
         enddo
 
         do i = 1, nplanets
-            if (isun(i) .gt. 0) then
-                r = sqrt((x(i,1)-x(isun(i),1))**2 + (x(i,2)-x(isun(i),2))**2)
+            if (isun(i) > 0) then
+                r = sqrt((x(i,1) - x(isun(i),1))**2 + (x(i,2) - x(isun(i),2))**2)
                 vv2 = v(i,1)**2 + v(i,2)**2
                 mu = G * (m(i) + m(isun(i)))
-                h = (x(i,1)-x(isun(i),1)) * v(i,2) - (x(i,2)-x(isun(i),2)) * v(i,1)
+                h = (x(i,1) - x(isun(i),1)) * v(i,2) - (x(i,2) - x(isun(i),2)) * v(i,1)
                 p = h**2 / mu
 
-                if (mu .eq. 0.5d0 * r * vv2) cycle
+                if (mu == 0.5d0 * r * vv2) cycle
                 a(i) = 1.d0 / (2.d0 / r - vv2 / mu)
 
-                if (p .gt. a(i)) cycle
+                if (p > a(i)) cycle
                 e(i) = sqrt(1.d0 - p / a(i))
                 b(i) = a(i) * sqrt(1.d0 - e(i)**2)
                 perihelion(i) = a(i) * (1.d0 - e(i))
@@ -233,8 +235,8 @@ module gravity
                 T(i) = 2.d0 * pi * sqrt(a(i)**3 / (G * (m(isun(i)) + m(i))))
 
                 cosalpha = (r - a(i) * (1.d0 - e(i)**2)) / (e(i) * r)
-                if (abs(cosalpha) .gt. 1.d0) cycle
-                alpha(i) = sign(acos(cosalpha), (x(i,1)-x(isun(i),1))*v(i,1) + (x(i,2)-x(isun(i),2))*v(i,2))
+                if (abs(cosalpha) > 1.d0) cycle
+                alpha(i) = sign(acos(cosalpha), (x(i,1) - x(isun(i),1)) * v(i,1) + (x(i,2) - x(isun(i),2)) * v(i,2))
             endif
         enddo
     end subroutine orbit
