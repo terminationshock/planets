@@ -15,28 +15,29 @@
 
 module gravity
     implicit none
+    integer, parameter  :: dp = kind(1.0d0)
     ! Length in AU; Time in days; Mass in Earth mass
-    real(kind=8), parameter :: pi = 3.141592653589793d0
-    real(kind=8), parameter :: G = 8.887724591822893d-10 ! AU^3 / (earthmass * day^2)
-    real(kind=8), parameter :: solarmass = 332946.04877d0
-    real(kind=8), parameter :: earthmass = 5.97219d24 ! kg
-    real(kind=8), parameter :: km = 1.d0 / 149597870.700d0 ! AU
-    real(kind=8), parameter :: s = 1.d0 / 86400d0 ! day
-    real(kind=8), parameter :: drmax = 5.d-4
+    real(dp), parameter :: pi = 3.141592653589793d0
+    real(dp), parameter :: G = 8.887724591822893d-10 ! AU^3 / (earthmass * day^2)
+    real(dp), parameter :: solarmass = 332946.04877d0
+    real(dp), parameter :: earthmass = 5.97219d24 ! kg
+    real(dp), parameter :: km = 1.d0 / 149597870.700d0 ! AU
+    real(dp), parameter :: s = 1.d0 / 86400d0 ! day
+    real(dp), parameter :: drmax = 5.d-4
 
     contains
 
     subroutine acceleration(iplanet, nplanets, x, xplanet, m, r, a, collide_any)
         implicit none
-        integer(kind=4),                     intent(in)  :: iplanet, nplanets
-        real(kind=8), dimension(nplanets,2), intent(in)  :: x
-        real(kind=8), dimension(2),          intent(in)  :: xplanet
-        real(kind=8), dimension(nplanets),   intent(in)  :: m, r
-        real(kind=8), dimension(2),          intent(out) :: a
-        logical,                             intent(out) :: collide_any
-        real(kind=8), dimension(nplanets,2)              :: acc
-        real(kind=8)                                     :: dr
-        integer(kind=4)                                  :: i, j
+        integer,                         intent(in)  :: iplanet, nplanets
+        real(dp), dimension(nplanets,2), intent(in)  :: x
+        real(dp), dimension(2),          intent(in)  :: xplanet
+        real(dp), dimension(nplanets),   intent(in)  :: m, r
+        real(dp), dimension(2),          intent(out) :: a
+        logical,                         intent(out) :: collide_any
+        real(dp), dimension(nplanets,2)              :: acc
+        real(dp)                                     :: dr
+        integer                                      :: i, j
 
         a(:) = 0.d0
         collide_any = .false.
@@ -60,16 +61,16 @@ module gravity
 
     subroutine rk4_step(iplanet, nplanets, x, v, m, r, dt, xnew, vnew, collide_any)
         implicit none
-        integer(kind=4),                     intent(in)  :: iplanet, nplanets
-        real(kind=8), dimension(nplanets,2), intent(in)  :: x, v
-        real(kind=8), dimension(nplanets),   intent(in)  :: m, r
-        real(kind=8),                        intent(in)  :: dt
-        real(kind=8), dimension(2),          intent(out) :: xnew, vnew
-        logical,                             intent(out) :: collide_any
-        real(kind=8), dimension(4,2)                     :: kx, kv
-        real(kind=8), dimension(2)                       :: a, xx, vv
-        integer(kind=4)                                  :: j
-        logical                                          :: bump
+        integer,                         intent(in)  :: iplanet, nplanets
+        real(dp), dimension(nplanets,2), intent(in)  :: x, v
+        real(dp), dimension(nplanets),   intent(in)  :: m, r
+        real(dp),                        intent(in)  :: dt
+        real(dp), dimension(2),          intent(out) :: xnew, vnew
+        logical,                         intent(out) :: collide_any
+        real(dp), dimension(4,2)                     :: kx, kv
+        real(dp), dimension(2)                       :: a, xx, vv
+        integer                                      :: j
+        logical                                      :: bump
 
         collide_any = .false.
 
@@ -113,11 +114,11 @@ module gravity
 
     subroutine collide(iplanet, nplanets, x, v, m, r)
         implicit none
-        integer(kind=4),                     intent(in)    :: iplanet, nplanets
-        real(kind=8), dimension(nplanets,2), intent(inout) :: x, v
-        real(kind=8), dimension(nplanets),   intent(inout) :: m, r
-        real(kind=8)                                       :: dr
-        integer(kind=4)                                    :: i, j
+        integer,                         intent(in)    :: iplanet, nplanets
+        real(dp), dimension(nplanets,2), intent(inout) :: x, v
+        real(dp), dimension(nplanets),   intent(inout) :: m, r
+        real(dp)                                       :: dr
+        integer                                        :: i, j
 
         do i = 1, nplanets
             if (i .ne. iplanet .and. m(iplanet) .gt. 0.d0) then
@@ -138,15 +139,15 @@ module gravity
 
     subroutine integrate(nplanets, ndt, dt, x, v, m, r, dtnew)
         implicit none
-        integer(kind=4),                     intent(in)    :: nplanets, ndt
-        real(kind=8),                        intent(in)    :: dt
-        real(kind=8), dimension(nplanets,2), intent(inout) :: x, v
-        real(kind=8), dimension(nplanets),   intent(inout) :: m, r
-        real(kind=8),                        intent(out)   :: dtnew
-        real(kind=8), dimension(2)                         :: xx, vv
-        real(kind=8)                                       :: dr, ddr
-        integer(kind=4)                                    :: i, j, n
-        logical                                            :: collide_any
+        integer,                         intent(in)    :: nplanets, ndt
+        real(dp),                        intent(in)    :: dt
+        real(dp), dimension(nplanets,2), intent(inout) :: x, v
+        real(dp), dimension(nplanets),   intent(inout) :: m, r
+        real(dp),                        intent(out)   :: dtnew
+        real(dp), dimension(2)                         :: xx, vv
+        real(dp)                                       :: dr, ddr
+        integer                                        :: i, j, n
+        logical                                        :: collide_any
 
         dr = 0.d0
         do n = 1, ndt
@@ -178,13 +179,13 @@ module gravity
 
     subroutine orbit(nplanets, x, v, m, a, b, e, alpha, perihelion, aphelion, T, isun)
         implicit none
-        integer(kind=4),                        intent(in)  :: nplanets
-        real(kind=8),    dimension(nplanets,2), intent(in)  :: x, v
-        real(kind=8),    dimension(nplanets),   intent(in)  :: m
-        real(kind=8),    dimension(nplanets),   intent(out) :: a, b, e, alpha, perihelion, aphelion, T
-        integer(kind=4), dimension(nplanets),   intent(out) :: isun
-        real(kind=8)                                        :: r, vv2, h, p, mu, cosalpha, energy, energy_min
-        integer(kind=4)                                     :: i, j
+        integer,                         intent(in)  :: nplanets
+        real(dp), dimension(nplanets,2), intent(in)  :: x, v
+        real(dp), dimension(nplanets),   intent(in)  :: m
+        real(dp), dimension(nplanets),   intent(out) :: a, b, e, alpha, perihelion, aphelion, T
+        integer,  dimension(nplanets),   intent(out) :: isun
+        real(dp)                                     :: r, vv2, h, p, mu, cosalpha, energy, energy_min
+        integer                                      :: i, j
 
         a(:) = 0.d0
         b(:) = 0.d0
