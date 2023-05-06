@@ -99,9 +99,9 @@ def test_conservation():
     # More than 100 years
     gravity.integrate(4000000, 1.e-2, x, v, m, r, len(m))
 
-    L1 = (x[1,0]-x[0,0])*v[1,1] - (x[1,1]-x[0,1])*v[1,0]
-    E1 = 0.5 * (v[1,0]**2 + v[1,1]**2) - gravity.g*(m[0]+m[1])/np.sqrt(x[1,0]**2 + x[1,1]**2)
-    assert(abs(L0 - L1) / L0 < 1.e-12)
+    L1 = (x[1,0]-x[0,0]) * (v[1,1]-v[0,1]) - (x[1,1]-x[0,1]) * (v[1,0]-v[0,0])
+    E1 = 0.5 * ((v[1,0]-v[0,0])**2 + (v[1,1]-v[0,1])**2) - gravity.g*(m[0]+m[1])/np.sqrt((x[1,0]-x[0,0])**2 + (x[1,1]-x[0,1])**2)
+    assert(abs(L0 - L1) / L0 < 1.e-13)
     assert(abs(E0 - E1) / E0 < 1.e-15)
 
 def test_collision():

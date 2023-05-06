@@ -219,9 +219,9 @@ module gravity
         do i = 1, nplanets
             if (isun(i) > 0) then
                 r = sqrt((x(i,1) - x(isun(i),1))**2 + (x(i,2) - x(isun(i),2))**2)
-                vv2 = v(i,1)**2 + v(i,2)**2
+                vv2 = (v(i,1) - v(isun(i),1))**2 + (v(i,2) - v(isun(i),2))**2
                 mu = G * (m(i) + m(isun(i)))
-                h = (x(i,1) - x(isun(i),1)) * v(i,2) - (x(i,2) - x(isun(i),2)) * v(i,1)
+                h = (x(i,1) - x(isun(i),1)) * (v(i,2) - v(isun(i),2)) - (x(i,2) - x(isun(i),2)) * (v(i,1) - v(isun(i),1))
                 p = h**2 / mu
 
                 if (mu == 0.5d0 * r * vv2) cycle
@@ -236,7 +236,8 @@ module gravity
 
                 cosalpha = (r - a(i) * (1.d0 - e(i)**2)) / (e(i) * r)
                 if (abs(cosalpha) > 1.d0) cycle
-                alpha(i) = sign(acos(cosalpha), (x(i,1) - x(isun(i),1)) * v(i,1) + (x(i,2) - x(isun(i),2)) * v(i,2))
+                alpha(i) = sign(acos(cosalpha), &
+                    & (x(i,1) - x(isun(i),1)) * (v(i,1) - v(isun(i),1)) + (x(i,2) - x(isun(i),2)) * (v(i,2) - v(isun(i),2)))
             endif
         enddo
     end subroutine orbit
